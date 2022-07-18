@@ -25,6 +25,7 @@ class _AddTransactionState extends State<AddTransaction> {
   }
 
   void _datePicker() {
+    print("Hi world");
     showDatePicker(
             context: context,
             initialDate: DateTime.now(),
