@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 class AddTransaction extends StatefulWidget {
   final Function _addTransaction;
+
   AddTransaction(this._addTransaction);
 
   @override
@@ -25,7 +26,6 @@ class _AddTransactionState extends State<AddTransaction> {
   }
 
   void _datePicker() {
-    print("Hi world");
     showDatePicker(
             context: context,
             initialDate: DateTime.now(),

@@ -1,13 +1,33 @@
+import 'dart:io';
+
 import 'package:budget_check/presentation/addTransactions.dart';
 import 'package:budget_check/presentation/chart.dart';
 
 import 'package:budget_check/presentation/userTransaction.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
 import 'models/transactions.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyHomePage());
+  // if (Platform.isAndroid)
+  //   SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+  runApp(MyHome());
+}
+
+class MyHome extends StatelessWidget {
+  const MyHome({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Platform.isIOS
+        ? CupertinoApp(debugShowCheckedModeBanner: false, home: MyHomePage())
+        : MaterialApp(
+            theme: ThemeData(primarySwatch: Colors.deepPurple),
+            debugShowCheckedModeBanner: false,
+            home: MyHomePage());
+  }
 }
 
 class MyHomePage extends StatefulWidget {
@@ -16,8 +36,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Transaction> _transactions = [];
+  void _startAddNewTransaction(BuildContext ctx) {
+    showModalBottomSheet(
+      context: ctx,
+      builder: (_) {
+        return GestureDetector(
+          onTap: () {},
+          child: AddTransaction(_addTransaction),
+          behavior: HitTestBehavior.opaque,
+        );
+      },
+    );
+  }
 
+  List<Transaction> _transactions = [];
+  bool _isChanged = true;
   void _addTransaction(String title, int amount, DateTime date) {
     final transactionTx = Transaction(
         dateTime: date,
@@ -44,42 +77,92 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(primarySwatch: Colors.deepPurple),
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("Budget Check"),
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            // mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Chart(recentTransaction),
+    final isLandScape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    if (!isLandScape) _isChanged = true;
+
+    final bodyWidget = SafeArea(
+        child: SingleChildScrollView(
+      child: Column(
+        // mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          if (isLandScape)
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(
+                "Show Chart",
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: UserTransaction(_transactions, _deleteTransaction),
-              ),
-            ],
-          ),
-        ),
-        floatingActionButton: Builder(
-          builder: (context) => FloatingActionButton(
-              elevation: 20,
-              child: Icon(Icons.add),
-              onPressed: () {
-                showModalBottomSheet(
-                    context: context,
-                    builder: (context) {
-                      return AddTransaction(_addTransaction);
+              Switch.adaptive(
+                  value: _isChanged,
+                  onChanged: (value) {
+                    setState(() {
+                      _isChanged = value;
                     });
-              }),
-        ),
+                  }),
+            ]),
+          if (_isChanged)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Chart(recentTransaction),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: UserTransaction(_transactions, _deleteTransaction),
+          ),
+        ],
       ),
-    );
+    ));
+    return Platform.isIOS
+        ? CupertinoPageScaffold(
+            navigationBar: CupertinoNavigationBar(
+                middle: Text("Budget Checker"),
+                trailing: TextButton(
+                  child: Icon(CupertinoIcons.add),
+                  onPressed: () {
+                    _startAddNewTransaction(context);
+                  },
+                )),
+            child: bodyWidget)
+        : Scaffold(
+            drawer: Drawer(
+              child: ListView(children: [
+                DrawerHeader(
+                    child: Text(
+                  "Check Your Expenses",
+                  style: TextStyle(fontSize: 25),
+                ))
+              ]),
+              backgroundColor: Theme.of(context).backgroundColor,
+            ),
+            appBar: AppBar(
+              actions: [
+                IconButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                          context: context,
+                          builder: (context) {
+                            return AddTransaction(_addTransaction);
+                          });
+                    },
+                    icon: Icon(Icons.add))
+              ],
+              title: Text("Budget Check"),
+            ),
+            body: bodyWidget,
+            floatingActionButton: Platform.isIOS
+                ? Container()
+                : Builder(
+                    builder: (context) => FloatingActionButton(
+                        elevation: 20,
+                        child: Icon(Icons.add),
+                        onPressed: () {
+                          showModalBottomSheet(
+                              context: context,
+                              builder: (context) {
+                                return AddTransaction(_addTransaction);
+                              });
+                        }),
+                  ),
+          );
   }
 }
