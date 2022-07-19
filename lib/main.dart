@@ -21,12 +21,13 @@ class MyHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Platform.isIOS
-        ? CupertinoApp(debugShowCheckedModeBanner: false, home: MyHomePage())
-        : MaterialApp(
-            theme: ThemeData(primarySwatch: Colors.deepPurple),
-            debugShowCheckedModeBanner: false,
-            home: MyHomePage());
+    // return Platform.isIOS
+    // ? CupertinoApp(debugShowCheckedModeBanner: false, home: MyHomePage())
+    return MaterialApp(
+      theme: ThemeData(primarySwatch: Colors.deepPurple),
+      debugShowCheckedModeBanner: false,
+      home: MyHomePage(),
+    );
   }
 }
 
@@ -113,16 +114,18 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ));
     return Platform.isIOS
-        ? CupertinoPageScaffold(
-            navigationBar: CupertinoNavigationBar(
-                middle: Text("Budget Checker"),
-                trailing: TextButton(
-                  child: Icon(CupertinoIcons.add),
-                  onPressed: () {
-                    _startAddNewTransaction(context);
-                  },
-                )),
-            child: bodyWidget)
+        ? Scaffold(
+            body: CupertinoPageScaffold(
+                navigationBar: CupertinoNavigationBar(
+                    middle: Text("Budget Checker"),
+                    trailing: TextButton(
+                      child: Icon(CupertinoIcons.add),
+                      onPressed: () {
+                        _startAddNewTransaction(context);
+                      },
+                    )),
+                child: bodyWidget),
+          )
         : Scaffold(
             drawer: Drawer(
               child: ListView(children: [
@@ -138,11 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
               actions: [
                 IconButton(
                     onPressed: () {
-                      showModalBottomSheet(
-                          context: context,
-                          builder: (context) {
-                            return AddTransaction(_addTransaction);
-                          });
+                      _startAddNewTransaction(context);
                     },
                     icon: Icon(Icons.add))
               ],
