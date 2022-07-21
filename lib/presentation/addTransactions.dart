@@ -101,6 +101,9 @@ class _AddTransactionState extends State<AddTransaction> {
             left: 10,
             right: 10),
         child: Card(
+
+
+          
           child: Padding(
             padding: EdgeInsets.all(10),
             child: Column(
