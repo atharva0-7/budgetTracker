@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 void main() {
   // if (Platform.isAndroid)
   //   SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-  runApp(MyHome());
+  runApp(const MyHome());
 }
 
 class MyHome extends StatelessWidget {
@@ -21,13 +21,13 @@ class MyHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return Platform.isIOS
-    // ? CupertinoApp(debugShowCheckedModeBanner: false, home: MyHomePage())
-    return MaterialApp(
-      theme: ThemeData(primarySwatch: Colors.deepPurple),
-      debugShowCheckedModeBanner: false,
-      home: MyHomePage(),
-    );
+    return Platform.isIOS
+        ? CupertinoApp(debugShowCheckedModeBanner: false, home: MyHomePage())
+        : MaterialApp(
+            theme: ThemeData(primarySwatch: Colors.deepPurple),
+            debugShowCheckedModeBanner: false,
+            home: MyHomePage(),
+          );
   }
 }
 
@@ -37,20 +37,44 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  void _startAddNewTransaction(BuildContext ctx) {
-    showModalBottomSheet(
-      context: ctx,
-      builder: (_) {
-        return GestureDetector(
-          onTap: () {},
-          child: AddTransaction(_addTransaction),
-          behavior: HitTestBehavior.opaque,
+  void _showAlertDialog(BuildContext context) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(),
+                color: Colors.grey[100],
+                borderRadius: const BorderRadius.all(Radius.circular(20))),
+            height: isLandScape(context)
+                ? MediaQuery.of(context).size.height - 200
+                : MediaQuery.of(context).size.height - 680,
+            child:
+                SingleChildScrollView(child: AddTransaction(_addTransaction)),
+          ),
         );
       },
     );
   }
 
-  List<Transaction> _transactions = [];
+  void _startAddNewTransaction(BuildContext ctx) {
+    Platform.isIOS
+        ? _showAlertDialog(ctx)
+        : showModalBottomSheet(
+            context: ctx,
+            builder: (_) {
+              return SingleChildScrollView(
+                  child: AddTransaction(_addTransaction));
+            },
+          );
+  }
+
+  List<Transaction> _transactions = [
+    // Transaction(
+    // dateTime: DateTime.now(), price: 999, title: "Shoes", id: "sadsa")
+  ];
   bool _isChanged = true;
   void _addTransaction(String title, int amount, DateTime date) {
     final transactionTx = Transaction(
@@ -72,35 +96,40 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<Transaction> get recentTransaction {
     return _transactions.where((tx) {
-      return tx.dateTime.isAfter(DateTime.now().subtract(Duration(days: 7)));
+      return tx.dateTime
+          .isAfter(DateTime.now().subtract(const Duration(days: 7)));
     }).toList();
+  }
+
+  bool isLandScape(BuildContext context) {
+    return MediaQuery.of(context).orientation == Orientation.landscape;
+  }
+
+  Widget _showSwitchButton() {
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      const Text(
+        "Show Chart",
+      ),
+      Switch.adaptive(
+          value: _isChanged,
+          onChanged: (value) {
+            setState(() {
+              _isChanged = value;
+            });
+          }),
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isLandScape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-    if (!isLandScape) _isChanged = true;
-
+    if (!isLandScape(context)) _isChanged = true;
     final bodyWidget = SafeArea(
         child: SingleChildScrollView(
       child: Column(
         // mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          if (isLandScape)
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(
-                "Show Chart",
-              ),
-              Switch.adaptive(
-                  value: _isChanged,
-                  onChanged: (value) {
-                    setState(() {
-                      _isChanged = value;
-                    });
-                  }),
-            ]),
+          if (isLandScape(context)) _showSwitchButton(),
           if (_isChanged)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -114,38 +143,29 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ));
     return Platform.isIOS
-        ? Scaffold(
-            body: CupertinoPageScaffold(
-                navigationBar: CupertinoNavigationBar(
-                    middle: Text("Budget Checker"),
-                    trailing: TextButton(
-                      child: Icon(CupertinoIcons.add),
-                      onPressed: () {
-                        _startAddNewTransaction(context);
-                      },
-                    )),
-                child: bodyWidget),
-          )
+        ? CupertinoPageScaffold(
+            navigationBar: CupertinoNavigationBar(
+                middle: const Text("Budget Checker"),
+                trailing: TextButton(
+                  child: const Icon(CupertinoIcons.add),
+                  onPressed: () {
+                    _startAddNewTransaction(context);
+                  },
+                )),
+            child: bodyWidget)
         : Scaffold(
             drawer: Drawer(
               child: ListView(children: [
-                DrawerHeader(
-                    child: Text(
+                const DrawerHeader(
+                    child: const Text(
                   "Check Your Expenses",
-                  style: TextStyle(fontSize: 25),
+                  style: const TextStyle(fontSize: 25),
                 ))
               ]),
               backgroundColor: Theme.of(context).backgroundColor,
             ),
             appBar: AppBar(
-              actions: [
-                IconButton(
-                    onPressed: () {
-                      _startAddNewTransaction(context);
-                    },
-                    icon: Icon(Icons.add))
-              ],
-              title: Text("Budget Check"),
+              title: const Text("Budget Check"),
             ),
             body: bodyWidget,
             floatingActionButton: Platform.isIOS
@@ -153,7 +173,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 : Builder(
                     builder: (context) => FloatingActionButton(
                         elevation: 20,
-                        child: Icon(Icons.add),
+                        child: const Icon(Icons.add),
                         onPressed: () {
                           showModalBottomSheet(
                               context: context,

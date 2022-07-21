@@ -15,11 +15,16 @@ class UserTransaction extends StatelessWidget {
     return Container(
       height: MediaQuery.of(context).size.height / 1.45,
       child: transactions.isEmpty
-          ? Center(
-              child: Text(
-              "No transactions",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ))
+          ? Column(
+              children: const [
+                Text("No transaction"),
+                Flexible(
+                  child: Image(
+                      // fit: BoxFit.cover,
+                      image: AssetImage('assets/images/waiting.png')),
+                )
+              ],
+            )
           : ListView.builder(
               itemCount: transactions.length,
               itemBuilder: (ctx, index) {
@@ -56,3 +61,7 @@ class UserTransaction extends StatelessWidget {
     );
   }
 }
+
+String? a;
+
+String b = a!;

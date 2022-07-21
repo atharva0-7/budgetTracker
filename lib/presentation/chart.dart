@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 class Chart extends StatelessWidget {
   List<Transaction> recentTransaction;
   Chart(this.recentTransaction);
-  List<Map<String, Object>> get groupTransactions {
+  List<Map> get groupTransactions {
     return List.generate(7, (index) {
       final weekDay = DateTime.now().subtract(Duration(days: index));
       var totalSum = 0;
@@ -27,6 +27,12 @@ class Chart extends StatelessWidget {
     }).reversed.toList();
   }
 
+  double get totalSpending {
+    return groupTransactions.fold(0.0, (sum, item) {
+      return sum + item["amount"];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     print(groupTransactions);
@@ -35,8 +41,12 @@ class Chart extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: groupTransactions.map((data) {
               return Flexible(
-                child:
-                    ChartBar(data['day'].toString(), data['amount'].toString()),
+                child: ChartBar(
+                    data['day'].toString(),
+                    data['amount'],
+                    totalSpending == 0.0
+                        ? 0.0
+                        : data['amount'] / totalSpending),
               );
             }).toList()));
   }
